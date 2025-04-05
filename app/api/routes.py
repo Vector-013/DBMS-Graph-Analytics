@@ -6,11 +6,13 @@ from app.methods import (
     get_user_data,
     get_artist_names,
     get_connected_nodes_data,
+    get_common_neighbors_with_data,
 )
 from fastapi.exceptions import HTTPException
 from pydantic import BaseModel
 
 router = APIRouter()
+driver = get_db()
 
 
 @router.get("/count_nodes")
@@ -101,4 +103,48 @@ def connected_nodes(user_id: int) -> Dict[str, Any]:
         "followers": connected["followers"],
         "following_count": len(connected["following"]),
         "followers_count": len(connected["followers"]),
+    }
+
+
+@router.get("/common_neighbors/{user1_id}/{user2_id}")
+def common_neighbors(user1_id: int, user2_id: int) -> Dict[str, Any]:
+    """
+    Get all users that are common neighbors of the two specified users,
+    along with detailed information about each common neighbor.
+
+    Parameters:
+        - user1_id: ID of the first user
+        - user2_id: ID of the second user
+
+    Returns:
+        - Information about the two specified users
+        - List of common neighbors with their country and artist data
+        - Count of common neighbors
+    """
+    # Verify users exist
+    with driver.session() as session:
+        user1_exists = session.run(
+            "MATCH (u:User {id: $id}) RETURN count(u) > 0 AS exists", id=user1_id
+        ).single()["exists"]
+        user2_exists = session.run(
+            "MATCH (u:User {id: $id}) RETURN count(u) > 0 AS exists", id=user2_id
+        ).single()["exists"]
+
+    if not user1_exists:
+        raise HTTPException(
+            status_code=404, detail=f"User with ID {user1_id} not found"
+        )
+    if not user2_exists:
+        raise HTTPException(
+            status_code=404, detail=f"User with ID {user2_id} not found"
+        )
+
+    # Get common neighbors with their data
+    common_neighbors = get_common_neighbors_with_data(user1_id, user2_id)
+
+    return {
+        "user1_id": user1_id,
+        "user2_id": user2_id,
+        "common_neighbors": common_neighbors,
+        "count": len(common_neighbors),
     }
