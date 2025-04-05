@@ -202,7 +202,7 @@ const Graph = ({ path, pathLength, pathData }) => {
       cy.layout({
         name: "random",
         directed: true,
-        spacingFactor: 1.2,
+        spacingFactor: 1,
         animate: true,
       }).run();
 
