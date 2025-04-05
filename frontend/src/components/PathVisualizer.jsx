@@ -49,42 +49,41 @@ const Graph = ({ path, pathLength, pathData }) => {
   const cyRef = useRef(null);
   const [animationInProgress, setAnimationInProgress] = useState(false);
   const [animationStep, setAnimationStep] = useState(0);
-  const [autoPlay, setAutoPlay] = useState(false); 
+  const [autoPlay, setAutoPlay] = useState(false);
 
-  
-// Create elements for Cytoscape
+
+  // Create elements for Cytoscape
   const elements = path.length > 0
     ? [
-        // Nodes - include user data for each node
-        ...path.map((nodeId, index) => ({
-          data: { 
-            id: nodeId.toString(),
-            countryCode: pathData.path_users[index]?.country_code || "",
-            countryName: pathData.path_users[index]?.country_name || "",
-            artists: pathData.path_users[index]?.top_artists || []
-          },
-        })),
+      // Nodes - include user data for each node
+      ...path.map((nodeId, index) => ({
+        data: {
+          id: nodeId.toString(),
+          countryCode: pathData.path_users[index]?.country_code || "",
+          countryName: pathData.path_users[index]?.country_name || "",
+          artists: pathData.path_users[index]?.top_artists || []
+        },
+      })),
 
-        // Edges - keep as is
-        ...path.slice(1).map((nodeId, index) => ({
-          data: {
-            id: `e${index}`,
-            source: path[index].toString(),
-            target: nodeId.toString(),
-            animated: false,
-          },
-        })),
-      ]
+      // Edges - keep as is
+      ...path.slice(1).map((nodeId, index) => ({
+        data: {
+          id: `e${index}`,
+          source: path[index].toString(),
+          target: nodeId.toString(),
+          animated: false,
+        },
+      })),
+    ]
     : [];
 
-    console.log(elements);
 
-    const [tooltip, setTooltip] = useState({
-      visible: false,
-      x: 0,
-      y: 0,
-      content: null
-    });
+  const [tooltip, setTooltip] = useState({
+    visible: false,
+    x: 0,
+    y: 0,
+    content: null
+  });
 
 
 
@@ -94,31 +93,31 @@ const Graph = ({ path, pathLength, pathData }) => {
       const cy = cyRef.current;
 
       cy.on('mouseover', 'node', (event) => {
-      const node = event.target;
-      const position = event.renderedPosition;
-      const nodeData = node.data();
-      
-      // Get flag URL using country code
-      const flagUrl = `https://flagcdn.com/w80/${nodeData.countryCode.toLowerCase()}.png`;
-      
-      setTooltip({
-        visible: true,
-        x: position.x,
-        y: position.y,
-        content: {
-          id: nodeData.id,
-          countryCode: nodeData.countryCode,
-          countryName: nodeData.countryName,
-          flagUrl: flagUrl,
-          artists: nodeData.artists
-        }
-      });
-    });
+        const node = event.target;
+        const position = event.renderedPosition;
+        const nodeData = node.data();
 
-    cy.on('mouseout', 'node', () => {
-      setTooltip({ visible: false, x: 0, y: 0, content: null });
-    });
-    
+        // Get flag URL using country code
+        const flagUrl = `https://flagcdn.com/w80/${nodeData.countryCode.toLowerCase()}.png`;
+
+        setTooltip({
+          visible: true,
+          x: position.x,
+          y: position.y,
+          content: {
+            id: nodeData.id,
+            countryCode: nodeData.countryCode,
+            countryName: nodeData.countryName,
+            flagUrl: flagUrl,
+            artists: nodeData.artists
+          }
+        });
+      });
+
+      cy.on('mouseout', 'node', () => {
+        setTooltip({ visible: false, x: 0, y: 0, content: null });
+      });
+
 
       // Apply base styling
       cy.style([
@@ -208,7 +207,7 @@ const Graph = ({ path, pathLength, pathData }) => {
         animate: true,
       }).run();
 
-      
+
       cy.fit(cy.elements(), 50);
       cy.center();
       // Reset animation state when new path is loaded
@@ -217,11 +216,11 @@ const Graph = ({ path, pathLength, pathData }) => {
       setAutoPlay(false);
 
       return () => {
-      cy.removeListener('mouseover');
-      cy.removeListener('mouseout');
-    };
-  }
-}, [path, pathData]);
+        cy.removeListener('mouseover');
+        cy.removeListener('mouseout');
+      };
+    }
+  }, [path, pathData]);
 
   // Animation effect
   useEffect(() => {
@@ -308,60 +307,60 @@ const Graph = ({ path, pathLength, pathData }) => {
   return (
     <div className="graph-container">
       <CytoscapeComponent
-          className="cytoscape-holder"
-          elements={elements}
-          style={{
-            width: "100%",
-            height: "400px",
-            border: "1px solid #ddd",
-            borderRadius: "5px",
-          }}
-          cy={(cy) => {
-            cyRef.current = cy;
-          }}
-          wheelSensitivity={0.2}
-        />
-
-        {tooltip.visible && tooltip.content && (
-  <div 
-    className="node-tooltip"
-    style={{
-      position: 'absolute',
-      left: `${tooltip.x + 10}px`,
-      top: `${tooltip.y + 10}px`,
-      zIndex: 1000,
-      backgroundColor: 'white',
-      border: '1px solid #ddd',
-      borderRadius: '5px',
-      padding: '10px',
-      boxShadow: '0 2px 5px rgba(0,0,0,0.2)',
-      maxWidth: '300px'
-    }}
-  >
-    <div style={{ display: 'flex', alignItems: 'center', marginBottom: '8px' }}>
-      <img 
-        src={tooltip.content.flagUrl} 
-        alt={`${tooltip.content.countryName} flag`}
-        style={{ width: '30px', marginRight: '10px' }}
+        className="cytoscape-holder"
+        elements={elements}
+        style={{
+          width: "100%",
+          height: "400px",
+          border: "1px solid #ddd",
+          borderRadius: "5px",
+        }}
+        cy={(cy) => {
+          cyRef.current = cy;
+        }}
+        wheelSensitivity={0.2}
       />
-      <div>
-        <strong>User ID: {tooltip.content.id}</strong>
-        <div>{tooltip.content.countryName} ({tooltip.content.countryCode})</div>
-      </div>
-    </div>
-    
-    <div>
-      <strong>Top Artists:</strong>
-      <ul style={{ margin: '5px 0', paddingLeft: '20px' }}>
-        {tooltip.content.artists.map(artist => (
-          <li key={artist.id}>{artist.name}</li>
-        ))}
-      </ul>
-    </div>
-  </div>
-)}
 
-    
+      {tooltip.visible && tooltip.content && (
+        <div
+          className="node-tooltip"
+          style={{
+            position: 'absolute',
+            left: `${tooltip.x + 10}px`,
+            top: `${tooltip.y + 10}px`,
+            zIndex: 1000,
+            backgroundColor: 'white',
+            border: '1px solid #ddd',
+            borderRadius: '5px',
+            padding: '10px',
+            boxShadow: '0 2px 5px rgba(0,0,0,0.2)',
+            maxWidth: '300px'
+          }}
+        >
+          <div style={{ display: 'flex', alignItems: 'center', marginBottom: '8px' }}>
+            <img
+              src={tooltip.content.flagUrl}
+              alt={`${tooltip.content.countryName} flag`}
+              style={{ width: '30px', marginRight: '10px' }}
+            />
+            <div>
+              <strong>User ID: {tooltip.content.id}</strong>
+              <div>{tooltip.content.countryName} ({tooltip.content.countryCode})</div>
+            </div>
+          </div>
+
+          <div>
+            <strong>Top Artists:</strong>
+            <ul style={{ margin: '5px 0', paddingLeft: '20px' }}>
+              {tooltip.content.artists.map(artist => (
+                <li key={artist.id}>{artist.name}</li>
+              ))}
+            </ul>
+          </div>
+        </div>
+      )}
+
+
 
       {path.length > 0 && (
         <>
@@ -428,11 +427,10 @@ const Graph = ({ path, pathLength, pathData }) => {
               <div
                 className="progress-fill"
                 style={{
-                  width: `${
-                    path.length > 1
+                  width: `${path.length > 1
                       ? (animationStep / (path.length - 1)) * 100
                       : 0
-                  }%`,
+                    }%`,
                 }}
               ></div>
             </div>
@@ -494,7 +492,6 @@ const ShortestPathApp = () => {
 
   return (
     <div className="shortest-path-app">
-      <h1>Shortest Path Finder</h1>
 
       <PathForm onSubmit={findShortestPath} loading={loading} />
 
@@ -506,11 +503,11 @@ const ShortestPathApp = () => {
           <p>Finding the shortest path...</p>
         </div>
       ) : (
-      <Graph 
-        path={pathData.path} 
-        pathLength={pathData.pathLength} 
-        pathData={pathData} // Make sure this line is included
-      />
+        <Graph
+          path={pathData.path}
+          pathLength={pathData.pathLength}
+          pathData={pathData} // Make sure this line is included
+        />
 
 
       )}

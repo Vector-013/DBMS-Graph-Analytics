@@ -22,13 +22,13 @@ const LandingPage = () => {
           </div>
 
           <div className="card">
-            <h2>Page 3</h2>
-            <button onClick={() => navigate("/page3")}>Go to Page 3</button>
+            <h2>Common Neighbors</h2>
+            <button onClick={() => navigate("/common-neighbors")}>Visit</button>
           </div>
 
           <div className="card">
             <h2>Page 3</h2>
-            <button onClick={() => navigate("/page3")}>Go to Page 3</button>
+            <button onClick={() => navigate("/page3")}>Visit</button>
           </div>
         </div>
 
@@ -36,39 +36,39 @@ const LandingPage = () => {
         <div className="row">
           <div className="card">
             <h2>Page 4</h2>
-            <button onClick={() => navigate("/page4")}>Go to Page 4</button>
+            <button onClick={() => navigate("/page4")}>Visit</button>
           </div>
 
           <div className="card">
             <h2>Page 5</h2>
-            <button onClick={() => navigate("/page5")}>Go to Page 5</button>
+            <button onClick={() => navigate("/page5")}>Visit</button>
           </div>
 
           <div className="card">
             <h2>Page 6</h2>
-            <button onClick={() => navigate("/page6")}>Go to Page 6</button>
+            <button onClick={() => navigate("/page6")}>Visit</button>
           </div>
 
           <div className="card">
             <h2>Page 3</h2>
-            <button onClick={() => navigate("/page3")}>Go to Page 3</button>
+            <button onClick={() => navigate("/page3")}>Visit</button>
           </div>
         </div>
         {/* Row 3 */}
         <div className="row">
           <div className="card">
             <h2>Page 7</h2>
-            <button onClick={() => navigate("/page7")}>Go to Page 7</button>
+            <button onClick={() => navigate("/page7")}>Visit</button>
           </div>
 
           <div className="card">
             <h2>Page 8</h2>
-            <button onClick={() => navigate("/page8")}>Go to Page 8</button>
+            <button onClick={() => navigate("/page8")}>Visit</button>
           </div>
 
           <div className="card">
             <h2>Page 9</h2>
-            <button onClick={() => navigate("/page9")}>Go to Page 9</button>
+            <button onClick={() => navigate("/page9")}>Visit</button>
           </div>
 
           
