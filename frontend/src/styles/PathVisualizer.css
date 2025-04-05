@@ -6,11 +6,6 @@
   /* overflow: scroll; */
 }
 
-.cytoscape-container{
-  position: relative;
-  right: 50%;
-}
-
 .path-form {
   margin-bottom: 30px;
   padding: 20px;
