@@ -21,6 +21,7 @@ import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import './App.css';
 import LandingPage from './components/HomePage';
 import PathVisualizer from './components/PathVisualizer';
+import ConnectedNodes from './components/ConnectedNodes';
 // import other pages here as you make them
 
 function App() {
@@ -30,6 +31,7 @@ function App() {
         <Routes>
           <Route path="/" element={<LandingPage />} />
           <Route path="/path-visualizer" element={<PathVisualizer />} />
+          <Route path="/connected-nodes" element={<ConnectedNodes />} />
           {/* Add more routes here */}
         </Routes>
       </Router>

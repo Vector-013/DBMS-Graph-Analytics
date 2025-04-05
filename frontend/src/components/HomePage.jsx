@@ -55,7 +55,7 @@ const LandingPage = () => {
 
           <div className="card">
             <h2>Page 2</h2>
-            <button onClick={() => navigate("/page2")}>Go to Page 2</button>
+            <button onClick={() => navigate("/connected-nodes")}>Visit</button>
           </div>
 
           <div className="card">
