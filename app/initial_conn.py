@@ -8,7 +8,7 @@ import os
 # Neo4j connection details
 NEO4J_URI = "bolt://localhost:7687"
 NEO4J_USER = "neo4j"
-NEO4J_PASSWORD = "Oj@$1319"  # Replace with your password
+NEO4J_PASSWORD = "dbms1234"  # Replace with your password
 
 # LastFM API key
 API_KEY = "fecd9e604929382f5f4f7a92e2b58c08"
