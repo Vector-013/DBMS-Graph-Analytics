@@ -7,6 +7,7 @@ from app.methods import (
     get_artist_names,
     get_connected_nodes_data,
     get_common_neighbors_with_data,
+    get_artist_name,
 )
 from fastapi.exceptions import HTTPException
 from pydantic import BaseModel
@@ -147,4 +148,97 @@ def common_neighbors(user1_id: int, user2_id: int) -> Dict[str, Any]:
         "user2_id": user2_id,
         "common_neighbors": common_neighbors,
         "count": len(common_neighbors),
+    }
+
+
+@router.get("/all_shortest_paths/{user1_id}/{user2_id}")
+def all_shortest_paths(user1_id: int, user2_id: int) -> Dict[str, Any]:
+    """
+    Find all shortest paths between two users.
+
+    This endpoint returns all paths that are tied for the shortest length between
+    the specified users. Each path is returned separately with full details about
+    all nodes involved in that path.
+
+    Parameters:
+        - user1_id: ID of the first user
+        - user2_id: ID of the second user
+
+    Returns:
+        - Information about source and target users
+        - List of all shortest paths, each containing the complete node sequence
+        - Count of paths found
+    """
+    # Verify users exist
+    with driver.session() as session:
+        user1_exists = session.run(
+            "MATCH (u:User {id: $id}) RETURN count(u) > 0 AS exists", id=user1_id
+        ).single()["exists"]
+        user2_exists = session.run(
+            "MATCH (u:User {id: $id}) RETURN count(u) > 0 AS exists", id=user2_id
+        ).single()["exists"]
+
+    if not user1_exists:
+        raise HTTPException(
+            status_code=404, detail=f"User with ID {user1_id} not found"
+        )
+    if not user2_exists:
+        raise HTTPException(
+            status_code=404, detail=f"User with ID {user2_id} not found"
+        )
+
+    # Find all shortest paths
+    with driver.session() as session:
+        result = session.run(
+            """
+            MATCH (source:User {id: $user1_id}), (target:User {id: $user2_id})
+            MATCH paths = ALL SHORTEST (source)-[:FOLLOWS*]-(target)
+            RETURN paths
+            """,
+            user1_id=user1_id,
+            user2_id=user2_id,
+        )
+
+        all_paths = []
+        for record in result:
+            path = record["paths"]
+            path_nodes = []
+
+            # Process each node in the path
+            for node in path.nodes:
+                node_id = node["id"]
+
+                # Get user data including country and artists
+                user_data = get_user_data(node_id)
+
+                # Get artist names
+                top_artists = []
+                if user_data and user_data.get("top_artists"):
+                    top_artists = get_artist_name(user_data["top_artists"][:10])
+
+                path_nodes.append(
+                    {
+                        "id": node_id,
+                        "country_code": (
+                            user_data.get("country_code") if user_data else None
+                        ),
+                        "country_name": (
+                            user_data.get("country_name") if user_data else None
+                        ),
+                        "top_artists": top_artists,
+                    }
+                )
+
+            all_paths.append(
+                {
+                    "path_nodes": path_nodes,
+                    "length": len(path_nodes) - 1,  # Number of hops
+                }
+            )
+
+    return {
+        "source_id": user1_id,
+        "target_id": user2_id,
+        "paths": all_paths,
+        "path_count": len(all_paths),
     }

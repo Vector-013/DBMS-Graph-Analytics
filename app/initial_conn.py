@@ -68,6 +68,7 @@ COUNTRY_CODES = {
     16: "MM",
     17: "KH",
 }
+graph = Graph(NEO4J_URI, auth=(NEO4J_USER, NEO4J_PASSWORD))
 
 
 def get_country_name(country_code):

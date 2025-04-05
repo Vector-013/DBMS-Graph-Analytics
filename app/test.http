@@ -19,3 +19,7 @@ Accept: application/json
 ### Get Common Neighbors between users 13 and 524
 GET http://localhost:8000/common_neighbors/13/524
 Accept: application/json
+
+### Get All Shortest Paths between users 1 and 100
+GET http://localhost:8000/all_shortest_paths/1/3572
+Accept: application/json
