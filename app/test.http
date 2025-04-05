@@ -2,12 +2,16 @@
 
 // POST  at http://localhost:8000/shortest-paths
 
-POST http://127.0.0.1:8000/shortest_path
-Content-Type: application/json
+# POST http://127.0.0.1:8000/shortest_path
+# Content-Type: application/json
 
-{
-  "source": 1,
-  "target": 3572
-}
+# {
+#   "source": 1,
+#   "target": 3572
+# }
+
+## Get Connected Nodes
+GET http://localhost:8000/connected_nodes/1
+Accept: application/json
 
 # GET http://localhost:8000/count_nodes

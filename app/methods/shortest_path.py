@@ -93,10 +93,48 @@ def get_shortest_path(source: int, target: int) -> Dict[str, Any]:
         [node IN nodes(path) | node.id] AS nodeIds,
         totalCost AS pathLength
     """
-    
+
     with driver.session() as session:
         result = session.run(query, source=source, target=target)
         record = result.single()
         if record:
             return {"path": record["nodeIds"], "pathLength": record["pathLength"]}
         return {"error": "No path found"}
+
+
+def get_connected_nodes_data(user_id: int) -> Dict[str, List[int]]:
+    """
+    Get users connected to the specified user through FOLLOWS relationships,
+    separated into two categories: followers and following.
+
+    This function returns:
+    1. Users that the specified user follows (outgoing relationships)
+    2. Users that follow the specified user (incoming relationships)
+
+    Returns:
+        Dictionary with two lists: 'following' and 'followers'
+    """
+    with driver.session() as session:
+        # Get users that the specified user follows
+        following_result = session.run(
+            """
+            MATCH (u:User {id: $user_id})-[:FOLLOWS]->(following:User)
+            RETURN collect(following.id) AS following
+            """,
+            user_id=user_id,
+        )
+        following_record = following_result.single()
+        following = following_record["following"] if following_record else []
+
+        # Get users that follow the specified user
+        followers_result = session.run(
+            """
+            MATCH (follower:User)-[:FOLLOWS]->(u:User {id: $user_id})
+            RETURN collect(follower.id) AS followers
+            """,
+            user_id=user_id,
+        )
+        followers_record = followers_result.single()
+        followers = followers_record["followers"] if followers_record else []
+
+        return {"following": following, "followers": followers}
