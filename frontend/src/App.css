@@ -1,28 +1,11 @@
 .App {
   text-align: center;
   font-family: Arial, sans-serif;
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 20px;
-}
-
-.App-header {
-  margin-bottom: 30px;
-  color: #333;
-}
-
-.App-header h1 {
-  margin-bottom: 10px;
-}
-
-.App-header p {
-  color: #666;
 }
 
 .path-visualizer {
   display: flex;
   flex-direction: column;
-  gap: 20px;
 }
 
 .controls {
@@ -66,29 +49,4 @@
   background-color: #FFEBEE;
   border-radius: 4px;
   margin-bottom: 20px;
-}
-
-.path-info {
-  background-color: #E3F2FD;
-  padding: 15px;
-  border-radius: 4px;
-  margin-bottom: 20px;
-}
-
-.path-info h3 {
-  margin-top: 0;
-  color: #0D47A1;
-}
-
-.graph-container {
-  border: 1px solid #ddd;
-  border-radius: 4px;
-  overflow: hidden;
-  height: 500px;
-}
-
-footer {
-  margin-top: 40px;
-  color: #666;
-  font-size: 14px;
 }
