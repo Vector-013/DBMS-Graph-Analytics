@@ -23,6 +23,9 @@
   margin-bottom: 15px;
 }
 
+canvas{
+  left: 0;
+}
 
 .form-group label {
   display: block;

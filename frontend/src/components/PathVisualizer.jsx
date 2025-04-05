@@ -162,9 +162,9 @@ const Graph = ({ path, pathLength }) => {
 
       // Apply layout
       cy.layout({
-        name: "breadthfirst",
+        name: "random",
         directed: true,
-        spacingFactor: 1.5,
+        spacingFactor: 1.2,
         animate: true,
       }).run();
 
