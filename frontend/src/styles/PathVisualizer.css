@@ -6,11 +6,6 @@
   /* overflow: scroll; */
 }
 
-.cytoscape-container{
-  position: relative;
-  right: 50%;
-}
-
 .path-form {
   margin-bottom: 30px;
   padding: 20px;
@@ -140,6 +135,10 @@ button:disabled {
   height: 50px;
   animation: spin 1s linear infinite;
   margin-bottom: 20px;
+}
+
+.path-info{
+  width: 100%;
 }
 
 @keyframes spin {

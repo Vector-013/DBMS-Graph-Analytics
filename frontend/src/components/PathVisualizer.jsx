@@ -77,6 +77,8 @@ const Graph = ({ path, pathLength, pathData }) => {
       ]
     : [];
 
+    console.log(elements);
+
     const [tooltip, setTooltip] = useState({
       visible: false,
       x: 0,

@@ -7,6 +7,10 @@ const ConnectedNodes = () => {
   const [userId, setUserId] = useState("");
   const [elements, setElements] = useState([]);
   const [fetchTrigger, setFetchTrigger] = useState(false);
+  const [cyKey, setCyKey] = useState(0);
+
+  const [showFollowing, setShowFollowing] = useState(true);
+  const [showFollowers, setShowFollowers] = useState(true);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -17,29 +21,38 @@ const ConnectedNodes = () => {
         const { user, following, followers } = response.data;
 
         console.log(response.data);
+        
 
         const nodes = [
           { data: { id: `${user.id}`, label: `${user.id}` }, classes: "main-user" },
-          ...following.map((id) => ({
-            data: { id: `${id}`, label: `${id}` },
-            classes: "following-user",
-          })),
-          ...followers.map((id) => ({
-            data: { id: `${id}`, label: `${id}` },
-            classes: "follower-user",
-          })),
+          ...(showFollowing
+            ? following.map((id) => ({
+          data: { id: `${id}`, label: `${id}` },
+          classes: "following-user",
+              }))
+            : []),
+          ...(showFollowers
+            ? followers.map((id) => ({
+          data: { id: `${id}`, label: `${id}` },
+          classes: "follower-user",
+              }))
+            : []),
         ];
+
+        console.log("Nodes:", nodes);
 
         const edges = [
-          ...following.map((id) => ({
-            data: { source: `${user.id}`, target: `${id}` },
-          })),
-          ...followers.map((id) => ({
-            data: { source: `${id}`, target: `${user.id}` },
-          })),
+          ...(showFollowing ? following.map((id) => ({
+            data: { id : `e${id}`,source: `${user.id}`, target: `${id}` },
+          })) : [])
+          ,
+          ...(showFollowers ? followers.map((id) => ({
+            data: { id : `e${id}`, source: `${id}`, target: `${user.id}` },
+          })) : []),
         ];
-
         setElements([...nodes, ...edges]);
+        setCyKey((prevKey) => prevKey + 1); // Update key to force re-render
+
       } catch (error) {
         console.error("Error fetching data:", error);
       } finally {
@@ -48,7 +61,7 @@ const ConnectedNodes = () => {
     };
 
     fetchData();
-  }, [fetchTrigger, userId]);
+  }, [fetchTrigger, userId, showFollowing, showFollowers]);
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -72,8 +85,29 @@ const ConnectedNodes = () => {
         </button>
       </form>
 
+      <div className="checkbox-container">
+        <label>
+          <input
+            type="checkbox"
+            checked={showFollowing}
+            onChange={() => setShowFollowing(!showFollowing)}
+          />
+          Show Following
+        </label>
+        <label>
+          <input
+            type="checkbox"
+            checked={showFollowers}
+            onChange={() => setShowFollowers(!showFollowers)}
+          />
+          Show Followers
+        </label>
+        <button className="submit-button" onClick={() => setFetchTrigger(true)}>Update</button>
+      </div>
+
       <div className="cytoscape-wrapper">
         <CytoscapeComponent
+          key={cyKey} // Key to force re-render
           elements={elements}
           style={{ width: "100%", height: "100%" }}
           layout={{ name: "random", fit: true }}
