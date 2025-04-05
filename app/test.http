@@ -1,0 +1,13 @@
+// test post at shortest paths\
+
+// POST  at http://localhost:8000/shortest-paths
+
+POST http://127.0.0.1:8000/shortest_path
+Content-Type: application/json
+
+{
+  "source": 1,
+  "target": 3572
+}
+
+# GET http://localhost:8000/count_nodes
