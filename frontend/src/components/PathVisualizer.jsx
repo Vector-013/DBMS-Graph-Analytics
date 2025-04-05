@@ -45,40 +45,78 @@ const PathForm = ({ onSubmit, loading }) => {
   );
 };
 
-// Graph Component to Display Path with Animation
-const Graph = ({ path, pathLength }) => {
+const Graph = ({ path, pathLength, pathData }) => {
   const cyRef = useRef(null);
   const [animationInProgress, setAnimationInProgress] = useState(false);
   const [animationStep, setAnimationStep] = useState(0);
-  const [autoPlay, setAutoPlay] = useState(false);
+  const [autoPlay, setAutoPlay] = useState(false); 
 
   
+// Create elements for Cytoscape
+  const elements = path.length > 0
+    ? [
+        // Nodes - include user data for each node
+        ...path.map((nodeId, index) => ({
+          data: { 
+            id: nodeId.toString(),
+            countryCode: pathData.path_users[index]?.country_code || "",
+            countryName: pathData.path_users[index]?.country_name || "",
+            artists: pathData.path_users[index]?.top_artists || []
+          },
+        })),
 
-  // Create elements for Cytoscape
-  const elements =
-    path.length > 0
-      ? [
-          // Nodes - all nodes are added at once
-          ...path.map((nodeId) => ({
-            data: { id: nodeId.toString() },
-          })),
+        // Edges - keep as is
+        ...path.slice(1).map((nodeId, index) => ({
+          data: {
+            id: `e${index}`,
+            source: path[index].toString(),
+            target: nodeId.toString(),
+            animated: false,
+          },
+        })),
+      ]
+    : [];
 
-          // Edges - all edges are added but will be highlighted during animation
-          ...path.slice(1).map((nodeId, index) => ({
-            data: {
-              id: `e${index}`,
-              source: path[index].toString(),
-              target: nodeId.toString(),
-              animated: false,
-            },
-          })),
-        ]
-      : [];
+    const [tooltip, setTooltip] = useState({
+      visible: false,
+      x: 0,
+      y: 0,
+      content: null
+    });
+
+
 
   // Apply styling when elements change
   useEffect(() => {
     if (cyRef.current && path.length > 0) {
       const cy = cyRef.current;
+
+      cy.on('mouseover', 'node', (event) => {
+      const node = event.target;
+      const position = event.renderedPosition;
+      const nodeData = node.data();
+      
+      // Get flag URL using country code
+      const flagUrl = `https://flagcdn.com/w80/${nodeData.countryCode.toLowerCase()}.png`;
+      
+      setTooltip({
+        visible: true,
+        x: position.x,
+        y: position.y,
+        content: {
+          id: nodeData.id,
+          countryCode: nodeData.countryCode,
+          countryName: nodeData.countryName,
+          flagUrl: flagUrl,
+          artists: nodeData.artists
+        }
+      });
+    });
+
+    cy.on('mouseout', 'node', () => {
+      setTooltip({ visible: false, x: 0, y: 0, content: null });
+    });
+    
 
       // Apply base styling
       cy.style([
@@ -175,8 +213,13 @@ const Graph = ({ path, pathLength }) => {
       setAnimationStep(0);
       setAnimationInProgress(false);
       setAutoPlay(false);
-    }
-  }, [path]);
+
+      return () => {
+      cy.removeListener('mouseover');
+      cy.removeListener('mouseout');
+    };
+  }
+}, [path, pathData]);
 
   // Animation effect
   useEffect(() => {
@@ -276,6 +319,47 @@ const Graph = ({ path, pathLength }) => {
           }}
           wheelSensitivity={0.2}
         />
+
+        {tooltip.visible && tooltip.content && (
+  <div 
+    className="node-tooltip"
+    style={{
+      position: 'absolute',
+      left: `${tooltip.x + 10}px`,
+      top: `${tooltip.y + 10}px`,
+      zIndex: 1000,
+      backgroundColor: 'white',
+      border: '1px solid #ddd',
+      borderRadius: '5px',
+      padding: '10px',
+      boxShadow: '0 2px 5px rgba(0,0,0,0.2)',
+      maxWidth: '300px'
+    }}
+  >
+    <div style={{ display: 'flex', alignItems: 'center', marginBottom: '8px' }}>
+      <img 
+        src={tooltip.content.flagUrl} 
+        alt={`${tooltip.content.countryName} flag`}
+        style={{ width: '30px', marginRight: '10px' }}
+      />
+      <div>
+        <strong>User ID: {tooltip.content.id}</strong>
+        <div>{tooltip.content.countryName} ({tooltip.content.countryCode})</div>
+      </div>
+    </div>
+    
+    <div>
+      <strong>Top Artists:</strong>
+      <ul style={{ margin: '5px 0', paddingLeft: '20px' }}>
+        {tooltip.content.artists.map(artist => (
+          <li key={artist.id}>{artist.name}</li>
+        ))}
+      </ul>
+    </div>
+  </div>
+)}
+
+    
 
       {path.length > 0 && (
         <>
@@ -420,7 +504,13 @@ const ShortestPathApp = () => {
           <p>Finding the shortest path...</p>
         </div>
       ) : (
-        <Graph path={pathData.path} pathLength={pathData.pathLength} />
+      <Graph 
+        path={pathData.path} 
+        pathLength={pathData.pathLength} 
+        pathData={pathData} // Make sure this line is included
+      />
+
+
       )}
     </div>
   );
