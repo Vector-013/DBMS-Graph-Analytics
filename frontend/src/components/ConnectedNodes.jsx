@@ -183,7 +183,7 @@ const ConnectedNodes = () => {
                 label: "data(label)",
                 color: "#fff",
                 "text-valign": "center",
-                "text-halign": "center",
+                "text-align": "center",
                 "font-size": "12px",
               },
             },
