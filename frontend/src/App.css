@@ -1,6 +1,8 @@
 .App {
   text-align: center;
   font-family: Arial, sans-serif;
+  min-height:100vh;
+  /* background: linear-gradient(135deg, #9754d6, #819ff7); */
 }
 
 .path-visualizer {
