@@ -199,3 +199,68 @@ def get_common_neighbors_with_data(
             )
 
         return common_neighbors
+
+
+def get_community_data() -> Dict[str, Any]:
+    """Execute community detection query and return formatted results"""
+    query = """
+    CALL {
+      // Louvain metrics and edges
+      CALL gds.louvain.write('lastfm', { writeProperty: 'louvain_community' })
+      YIELD computeMillis AS louvainTime, communityCount AS louvainCommunities, modularity
+      WITH louvainTime, louvainCommunities, modularity
+      CALL {
+        MATCH (u1:User)-[r:FOLLOWS]->(u2:User)
+        WHERE u1.louvain_community <> u2.louvain_community
+        RETURN 
+          u1.louvain_community AS source,
+          u2.louvain_community AS target,
+          count(r) AS edgeCount
+        ORDER BY edgeCount DESC
+        LIMIT 10
+      }
+      RETURN 
+        { timeMs: louvainTime, communities: louvainCommunities, modularity: modularity } AS louvainMetrics,
+        collect({source: source, target: target, count: edgeCount}) AS louvainEdges
+    }
+    CALL {
+      // Label Propagation metrics and edges
+      CALL gds.labelPropagation.write('lastfm', { 
+        writeProperty: 'labelprop_community',
+        maxIterations: 10 
+      })
+      YIELD computeMillis AS labelPropTime, communityCount AS labelPropCommunities, ranIterations
+      WITH labelPropTime, labelPropCommunities, ranIterations
+      CALL {
+        MATCH (u1:User)-[r:FOLLOWS]->(u2:User)
+        WHERE u1.labelprop_community <> u2.labelprop_community
+        RETURN 
+          u1.labelprop_community AS source,
+          u2.labelprop_community AS target,
+          count(r) AS edgeCount
+        ORDER BY edgeCount DESC
+        LIMIT 10
+      }
+      RETURN 
+        { timeMs: labelPropTime, communities: labelPropCommunities, iterations: ranIterations } AS labelPropMetrics,
+        collect({source: source, target: target, count: edgeCount}) AS labelPropEdges
+    }
+    RETURN {
+      louvain: {
+        metrics: louvainMetrics,
+        edges: louvainEdges
+      },
+      labelProp: {
+        metrics: labelPropMetrics,
+        edges: labelPropEdges
+      }
+    } AS result;
+    """
+
+    try:
+        with driver.session() as session:
+            result = session.run(query)
+            record = result.single()
+            return record["result"] if record else {"error": "No data found"}
+    except Exception as e:
+        raise RuntimeError(f"Database query failed: {str(e)}")
