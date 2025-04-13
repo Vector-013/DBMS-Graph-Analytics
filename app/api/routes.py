@@ -8,6 +8,7 @@ from app.methods import (
     get_connected_nodes_data,
     get_common_neighbors_with_data,
     get_artist_name,
+    get_community_data
 )
 from fastapi.exceptions import HTTPException
 from pydantic import BaseModel
@@ -242,3 +243,12 @@ def all_shortest_paths(user1_id: int, user2_id: int) -> Dict[str, Any]:
         "paths": all_paths,
         "path_count": len(all_paths),
     }
+
+
+@router.get("/community-detection", response_model=Dict[str, Any])
+def community_detection_endpoint():
+    """Endpoint to retrieve community detection results"""
+    try:
+        return get_community_data()
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
