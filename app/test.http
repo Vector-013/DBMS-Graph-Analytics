@@ -20,8 +20,7 @@ Accept: application/json
 
 # GET http://localhost:8000/count_nodes
 
-### Get Common Neighbors between users 13 and 524
-
+## Get Common Neighbors between users 13 and 524
 GET http://localhost:8000/common_neighbors/13/524
 Accept: application/json
 
