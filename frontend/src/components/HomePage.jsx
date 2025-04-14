@@ -40,8 +40,8 @@ const LandingPage = () => {
           </div>
 
           <div className="card">
-            <h2>Page 5</h2>
-            <button onClick={() => navigate("/page5")}>Visit</button>
+            <h2>Page Rank</h2>
+            <button onClick={() => navigate("/page-rank")}>Visit</button>
           </div>
 
           <div className="card">
