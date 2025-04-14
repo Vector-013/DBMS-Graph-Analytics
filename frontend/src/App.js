@@ -9,6 +9,8 @@ import AllShortestPathsApp from './components/AllShortestPaths';
 import Graphs from './components/CommunityDetection';
 import TopUsersCarousel from './components/PageRank';
 import MetricsCarousel from './components/CentralityAnalysis';
+import CountryPairwiseHeatmap from './components/HeatMap';
+import TriangleAnalysis from './components/TriangleAnalysis';
 // import other pages here as you make them
 
 function App() {
@@ -24,6 +26,8 @@ function App() {
           <Route path="/community-detection" element={<Graphs />} />
           <Route path="/page-rank" element={<TopUsersCarousel />} />
           <Route path="/centrality-analysis" element={<MetricsCarousel />} />
+          <Route path="/country-pairwise-heatmap" element={<CountryPairwiseHeatmap />} />
+          <Route path="/triangle-analysis" element={<TriangleAnalysis />} />
           {/* Add more routes here */}
         </Routes>
       </Router>

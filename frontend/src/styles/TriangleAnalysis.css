@@ -1,0 +1,81 @@
+.triangle-container {
+    width: 85%;
+    margin: 30px auto;
+    text-align: center;
+  }
+  
+  .triangle-title {
+    font-size: 2rem;
+    margin-bottom: 20px;
+    color: #333;
+  }
+  
+  .triangle-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 20px;
+    margin-top: 20px;
+  }
+  
+  .triangle-card {
+    background-color: #f9f9f9;
+    border: 2px solid #0074D9;
+    border-radius: 10px;
+    padding: 15px;
+    transition: transform 0.3s;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+  
+  .triangle-card:hover {
+    transform: scale(1.05);
+  }
+  
+  .triangle-graph {
+    margin-bottom: 10px;
+  }
+  
+  .triangle-info {
+    text-align: center;
+  }
+  
+  .triangle-countries {
+    font-size: 16px;
+    font-weight: bold;
+    margin-bottom: 5px;
+  }
+  
+  .triangle-count {
+    font-size: 14px;
+    color: #555;
+  }
+  
+  .loading {
+    text-align: center;
+    margin-top: 50px;
+    font-size: 1.5rem;
+    color: #666;
+  }
+
+  .metrics-summary {
+    margin: 20px 0;
+    text-align: center;
+    background: #e8f0fe;
+    padding: 15px;
+    border-radius: 10px;
+    border: 2px solid #0074D9;
+  }
+  
+  .metrics-summary h3 {
+    margin-bottom: 10px;
+    font-size: 1.5rem;
+    color: #333;
+  }
+  
+  .metrics-summary p {
+    margin: 5px 0;
+    font-size: 1rem;
+    color: #444;
+  }
+  

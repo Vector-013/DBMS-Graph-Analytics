@@ -1,0 +1,46 @@
+.heatmap-container {
+    width: 90%;
+    margin: 30px auto;
+    text-align: center;
+  }
+  
+  .heatmap-title {
+    font-size: 2rem;
+    margin-bottom: 20px;
+    color: #333;
+  }
+  
+  .loading {
+    text-align: center;
+    margin-top: 50px;
+    font-size: 1.5rem;
+    color: #666;
+  }
+  
+  /* Adjust tooltip like effects (optional) */
+  .react-heatmap-grid div {
+    border: 1px solid #e0e0e0;
+    box-sizing: border-box;
+  }
+  
+  .react-heatmap-grid {
+    overflow-x: auto;
+  }
+  .metrics-heatmap {
+    padding: 10px;
+    background: #dededf;
+    border-radius: 10px;
+    text-align: center;
+  }
+  
+  .metrics-heatmap h3 {
+    font-size: 1.5rem;
+    color: #333;
+    margin-bottom: 10px;
+  }
+  
+  .metrics-heatmap p {
+    font-size: 1rem;
+    color: #444;
+  }
+    

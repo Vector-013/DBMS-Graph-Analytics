@@ -50,15 +50,15 @@ const LandingPage = () => {
           </div>
 
           <div className="card">
-            <h2>Page 3</h2>
-            <button onClick={() => navigate("/page3")}>Visit</button>
+            <h2>Heat Map</h2>
+            <button onClick={() => navigate("/country-pairwise-heatmap")}>Visit</button>
           </div>
         </div>
         {/* Row 3 */}
         <div className="row">
           <div className="card">
-            <h2>Page 7</h2>
-            <button onClick={() => navigate("/page7")}>Visit</button>
+            <h2>Triangle Analysis</h2>
+            <button onClick={() => navigate("/triangle-analysis")}>Visit</button>
           </div>
 
           <div className="card">
