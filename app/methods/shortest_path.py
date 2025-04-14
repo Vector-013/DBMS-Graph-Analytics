@@ -205,55 +205,87 @@ def get_community_data() -> Dict[str, Any]:
     """Execute community detection query and return formatted results"""
     query = """
     CALL {
-      // Louvain metrics and edges
-      CALL gds.louvain.write('lastfm', { writeProperty: 'louvain_community' })
-      YIELD computeMillis AS louvainTime, communityCount AS louvainCommunities, modularity
-      WITH louvainTime, louvainCommunities, modularity
-      CALL {
+    // Louvain metrics and edges with community sizes
+    CALL gds.louvain.write('lastfm', { writeProperty: 'louvain_community' })
+    YIELD computeMillis AS louvainTime, communityCount AS louvainCommunities, modularity
+    WITH louvainTime, louvainCommunities, modularity
+    CALL {
         MATCH (u1:User)-[r:FOLLOWS]->(u2:User)
         WHERE u1.louvain_community <> u2.louvain_community
-        RETURN 
-          u1.louvain_community AS source,
-          u2.louvain_community AS target,
-          count(r) AS edgeCount
+        WITH 
+        u1.louvain_community AS source,
+        u2.louvain_community AS target,
+        count(r) AS edgeCount
         ORDER BY edgeCount DESC
         LIMIT 10
-      }
-      RETURN 
+        // Get community sizes
+        MATCH (src:User {louvain_community: source})
+        WITH source, target, edgeCount, count(src) AS sourceSize
+        MATCH (tgt:User {louvain_community: target})
+        RETURN 
+        source,
+        target,
+        edgeCount,
+        sourceSize,
+        count(tgt) AS targetSize
+    }
+    RETURN 
         { timeMs: louvainTime, communities: louvainCommunities, modularity: modularity } AS louvainMetrics,
-        collect({source: source, target: target, count: edgeCount}) AS louvainEdges
+        collect({
+        source: source, 
+        target: target, 
+        count: edgeCount,
+        sourceSize: sourceSize,
+        targetSize: targetSize
+        }) AS louvainEdges
     }
     CALL {
-      // Label Propagation metrics and edges
-      CALL gds.labelPropagation.write('lastfm', { 
+    // Label Propagation metrics and edges with community sizes
+    CALL gds.labelPropagation.write('lastfm', { 
         writeProperty: 'labelprop_community',
         maxIterations: 10 
-      })
-      YIELD computeMillis AS labelPropTime, communityCount AS labelPropCommunities, ranIterations
-      WITH labelPropTime, labelPropCommunities, ranIterations
-      CALL {
+    })
+    YIELD computeMillis AS labelPropTime, communityCount AS labelPropCommunities, ranIterations
+    WITH labelPropTime, labelPropCommunities, ranIterations
+    CALL {
         MATCH (u1:User)-[r:FOLLOWS]->(u2:User)
         WHERE u1.labelprop_community <> u2.labelprop_community
-        RETURN 
-          u1.labelprop_community AS source,
-          u2.labelprop_community AS target,
-          count(r) AS edgeCount
+        WITH 
+        u1.labelprop_community AS source,
+        u2.labelprop_community AS target,
+        count(r) AS edgeCount
         ORDER BY edgeCount DESC
         LIMIT 10
-      }
-      RETURN 
+        // Get community sizes
+        MATCH (src:User {labelprop_community: source})
+        WITH source, target, edgeCount, count(src) AS sourceSize
+        MATCH (tgt:User {labelprop_community: target})
+        RETURN 
+        source,
+        target,
+        edgeCount,
+        sourceSize,
+        count(tgt) AS targetSize
+    }
+    RETURN 
         { timeMs: labelPropTime, communities: labelPropCommunities, iterations: ranIterations } AS labelPropMetrics,
-        collect({source: source, target: target, count: edgeCount}) AS labelPropEdges
+        collect({
+        source: source, 
+        target: target, 
+        count: edgeCount,
+        sourceSize: sourceSize,
+        targetSize: targetSize
+        }) AS labelPropEdges
     }
     RETURN {
-      louvain: {
+    louvain: {
         metrics: louvainMetrics,
         edges: louvainEdges
-      },
-      labelProp: {
+    },
+    labelProp: {
         metrics: labelPropMetrics,
         edges: labelPropEdges
-      }
+    }
     } AS result;
     """
 
