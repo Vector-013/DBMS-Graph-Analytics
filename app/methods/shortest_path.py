@@ -717,7 +717,7 @@ RETURN
     gds.util.asNode(targetNodeId).id AS target,
     distance
 ORDER BY distance DESC
-LIMIT 2500;
+LIMIT 1000;
 """
 
 # Second query using Cypher PROFILE
@@ -735,7 +735,7 @@ RETURN
     id(u2) AS target,
     distance
 ORDER BY distance DESC
-LIMIT 2500;
+LIMIT 1000;
 """
 
 # Execute both queries through the API
