@@ -2,6 +2,9 @@
 
 //POST  at http://localhost:8000/shortest-paths
 
+GET http://127.0.0.1:8000/shortest_path/1/3572
+Accept: application/json
+
 # POST http://127.0.0.1:8000/shortest_path
 # Content-Type: application/json
 
@@ -10,17 +13,20 @@
 #   "target": 3572
 # }
 
-# Get Connected Nodes
+### Get Connected Nodes
+
 GET http://localhost:8000/connected_nodes/4000
 Accept: application/json
 
 # GET http://localhost:8000/count_nodes
 
 ### Get Common Neighbors between users 13 and 524
-# GET http://localhost:8000/common_neighbors/13/524
-# Accept: application/json
 
-# ### Get All Shortest Paths between users 1 and 3572
+GET http://localhost:8000/common_neighbors/13/524
+Accept: application/json
+
+### Get All Shortest Paths between users 1 and 3572
+
 GET http://localhost:8000/all_shortest_paths/1/3572
 Accept: application/json
 
@@ -39,6 +45,11 @@ Accept: application/json
 ### Get country triangle analysis
 GET http://localhost:8000/full_triangle_analysis
 Accept: application/json
+
+### Get all pairs shortest paths
+GET http://localhost:8000/all-pairs-shortest-paths
+Accept: application/json
+
 
 
 # POST http://localhost:8000/add_path
