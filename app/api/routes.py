@@ -249,6 +249,41 @@ def all_shortest_paths(user1_id: int, user2_id: int) -> Dict[str, Any]:
     }
 
 
+# --- New code to add a path ---
+
+class PathCreateRequest(BaseModel):
+    path_nodes: List[int]
+
+@router.post("/add_path")
+def add_path(request: PathCreateRequest) -> Dict[str, Any]:
+    """
+    Add a path between nodes in the given order: node_ids[0] -> node_ids[1] -> ... -> node_ids[n]
+    Creates FOLLOWS relationships if they don't already exist.
+    """
+
+    if len(request.path_nodes) < 2:
+        raise HTTPException(status_code=400, detail="At least two nodes are required to create a path.")
+
+    with driver.session() as session:
+        for i in range(len(request.path_nodes) - 1):
+            source_id = request.path_nodes[i]
+            target_id = request.path_nodes[i + 1]
+
+            session.run(
+                """
+                MATCH (source:User {id: $source_id}), (target:User {id: $target_id})
+                MERGE (source)-[:FOLLOWS]->(target)
+                """,
+                source_id=source_id,
+                target_id=target_id
+            )
+
+    return {
+        "message": "Path added successfully.",
+        "path": request.path_nodes
+    }
+
+
 @router.get("/community-detection", response_model=Dict[str, Any])
 def community_detection_endpoint():
     """Endpoint to retrieve community detection results"""

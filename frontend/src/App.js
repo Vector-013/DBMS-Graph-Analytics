@@ -5,6 +5,7 @@ import LandingPage from './components/HomePage';
 import PathVisualizer from './components/PathVisualizer';
 import ConnectedNodes from './components/ConnectedNodes';
 import CommonNeighbors from './components/CommonNeighbors';
+import AllShortestPathsApp from './components/AllShortestPaths';
 // import other pages here as you make them
 
 function App() {
@@ -16,6 +17,7 @@ function App() {
           <Route path="/path-visualizer" element={<PathVisualizer />} />
           <Route path="/connected-nodes" element={<ConnectedNodes />} />
           <Route path="/common-neighbors" element={<CommonNeighbors />} />
+          <Route path="/all-shortest-paths" element={<AllShortestPathsApp />} />
           {/* Add more routes here */}
         </Routes>
       </Router>

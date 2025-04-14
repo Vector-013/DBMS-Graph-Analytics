@@ -12,7 +12,7 @@ const LandingPage = () => {
       <div className="row-container">
         <div className="row">
           <div className="card">
-            <h2>Shortest Path </h2>
+            <h2>Shortest Path Finder</h2>
             <button onClick={() => navigate("/path-visualizer")}>Visit</button>
           </div>
 
@@ -27,8 +27,8 @@ const LandingPage = () => {
           </div>
 
           <div className="card">
-            <h2>Page 3</h2>
-            <button onClick={() => navigate("/page3")}>Visit</button>
+            <h2>All Shortest Paths</h2>
+            <button onClick={() => navigate("/all-shortest-paths")}>Visit</button>
           </div>
         </div>
 
