@@ -8,7 +8,11 @@ from app.methods import (
     get_connected_nodes_data,
     get_common_neighbors_with_data,
     get_artist_name,
-    get_community_data
+    get_community_data,
+    get_pagerank_with_full_metrics,
+    get_centrality_analysis,
+    # get_triangle_country_data_with_metrics,
+    get_combined_analysis,
 )
 from fastapi.exceptions import HTTPException
 from pydantic import BaseModel
@@ -252,3 +256,24 @@ def community_detection_endpoint():
         return get_community_data()
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.get("/top_pagerank_full", response_model=Dict[str, Any])
+def get_top_pagerank_full() -> Dict[str, Any]:
+    """Returns ranked users with complete profile data and execution metrics."""
+    return get_pagerank_with_full_metrics()
+
+@router.get("/centrality-analysis", response_model=Dict[str, Any])
+def get_centrality_analysis_endpoint():
+    """Endpoint to retrieve centrality analysis results"""
+    try:
+        return get_centrality_analysis()
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+# FastAPI Router
+@router.get("/full_triangle_analysis", response_model=Dict[str, Any])
+def get_country_triangle_analysis_with_metrics() -> Dict[str, Any]:
+    """Returns triangle data with execution metrics for both queries."""
+    return get_combined_analysis()

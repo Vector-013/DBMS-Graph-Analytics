@@ -27,3 +27,15 @@ Accept: application/json
 ### Get Community Detection Results
 GET http://localhost:8000/community-detection
 Accept: application/json
+
+### Get Top Pagerank
+GET http://localhost:8000/top_pagerank_full
+Accept: application/json
+
+### Get centrality analysis
+GET http://localhost:8000/centrality-analysis
+Accept: application/json
+
+### Get country triangle analysis
+GET http://localhost:8000/full_triangle_analysis
+Accept: application/json
