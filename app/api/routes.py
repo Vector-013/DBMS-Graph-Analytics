@@ -11,11 +11,12 @@ from app.methods import (
     get_community_data,
     get_pagerank_with_full_metrics,
     get_centrality_analysis,
-    # get_triangle_country_data_with_metrics,
     get_combined_analysis,
+    compare_approaches,
 )
 from fastapi.exceptions import HTTPException
 from pydantic import BaseModel
+from fastapi.responses import JSONResponse
 
 router = APIRouter()
 driver = get_db()
@@ -29,50 +30,18 @@ def count_nodes(db=Depends(get_db)):
         return {"node_count": result.single()["node_count"]}
 
 
-class ShortestPathRequest(BaseModel):
-    source: int
-    target: int
-
-
-@router.post("/shortest_path")
-def shortest_path(request: ShortestPathRequest) -> Dict[str, Any]:
+@router.get("/shortest_path/{source}/{target}")
+def shortest_path(source:int, target:int) -> Dict[str, Any]:
+ 
+    print(f"Finding shortest path from {source} to {target}")
+    
     """Fetch the shortest path between two nodes using Dijkstra in Neo4j."""
-    if not isinstance(request.source, int) or not isinstance(request.target, int):
-        return {"error": "Source and target must be integers."}
-
-    # Get shortest path
-    result = get_shortest_path(request.source, request.target)
+    result = get_shortest_path(source, target)
+    
     if "error" in result:
-        return result
-
-    # Get user data for all users in the path
-    path_users_data = []
-    for user_id in result["path"]:
-        user_data = get_user_data(user_id)
-        if user_data:
-            # Get artist names for the user
-            top_artists = []
-            if user_data.get("top_artists"):
-                top_artists = get_artist_names(user_data["top_artists"][:10])
-
-            path_users_data.append(
-                {
-                    "id": user_id,
-                    "country_code": user_data.get("country_code"),
-                    "country_name": user_data.get("country_name"),
-                    "top_artists": top_artists,
-                }
-            )
-
-    # Prepare response with user data and artist names for all users in the path
-    response = {
-        "path": result["path"],
-        "pathLength": result["pathLength"],
-        "path_users": path_users_data,
-    }
-
-    return response
-
+        raise HTTPException(status_code=404, detail=result["error"])
+    
+    return result
 
 @router.get("/connected_nodes/{user_id}")
 def connected_nodes(user_id: int) -> Dict[str, Any]:
@@ -312,3 +281,8 @@ def get_centrality_analysis_endpoint():
 def get_country_triangle_analysis_with_metrics() -> Dict[str, Any]:
     """Returns triangle data with execution metrics for both queries."""
     return get_combined_analysis()
+
+
+@router.get("/all-pairs-shortest-paths", response_model=Dict[str, Any])
+def get_all_pairs_shortest_paths() -> Dict[str, Any]:
+    return compare_approaches()

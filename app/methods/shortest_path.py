@@ -2,6 +2,9 @@ from app.db.neo4j_connection import get_db
 from typing import Optional, List, Dict, Any
 import os
 import requests
+from fastapi.exceptions import HTTPException
+from datetime import datetime
+from collections import defaultdict
 
 driver = get_db()
 
@@ -99,8 +102,9 @@ def get_artist_name(artist_ids: List[str]) -> List[Dict[str, str]]:
 
 
 def get_shortest_path(source: int, target: int) -> Dict[str, Any]:
-    """Fetch the shortest path between two nodes using Dijkstra in Neo4j."""
+    """Fetch the shortest path between two nodes using Dijkstra in Neo4j"""
     query = """
+    PROFILE
     MATCH (source:User {id: $source}), (target:User {id: $target})
     CALL gds.shortestPath.dijkstra.stream('lastfm', {
         sourceNode: source,
@@ -108,16 +112,27 @@ def get_shortest_path(source: int, target: int) -> Dict[str, Any]:
     })
     YIELD path, totalCost
     RETURN
-        [node IN nodes(path) | node.id] AS nodeIds,
+        [node IN nodes(path) | {
+            id: node.id,
+            country_code: node.country_code,
+            country_name: node.country_name,
+            top_artists: node.top_artists
+        }] AS nodes,
         totalCost AS pathLength
     """
-
     with driver.session() as session:
         result = session.run(query, source=source, target=target)
         record = result.single()
+        summary = result.consume()
+
         if record:
-            return {"path": record["nodeIds"], "pathLength": record["pathLength"]}
-        return {"error": "No path found"}
+            return {
+                "path": record["nodes"],
+                "pathLength": record["pathLength"],
+            }
+        return {
+            "error": "No path found",
+        }
 
 
 def get_connected_nodes_data(user_id: int) -> Dict[str, List[int]]:
@@ -637,3 +652,101 @@ def get_combined_analysis() -> Dict[str, Any]:
 
 
 
+def get_path_analysis(query: Optional[str] = None) -> Dict[str, Any]:
+    # Use default query if none provided
+    final_query = query.strip() if query else DEFAULT_QUERY
+    
+    results = []
+    distribution = defaultdict(int)
+    total = sum_dist = 0
+    min_dist, max_dist = float('inf'), 0
+
+    with driver.session() as session:
+        result = session.run(final_query)
+        records = list(result)  # Materialize results first
+        
+        summary = result.consume()
+        profile = summary.profile or {}  # Handle missing profile
+
+        for record in records:
+            source = record.get("source")
+            target = record.get("target")
+            distance = record.get("distance")
+            
+            if None in (source, target, distance):
+                continue  # Skip invalid records
+                
+            results.append({
+                "source": source,
+                "target": target,
+                "distance": distance
+            })
+            
+            # Update statistics
+            distribution[distance] += 1
+            total += 1
+            sum_dist += distance
+            min_dist = min(min_dist, distance)
+            max_dist = max(max_dist, distance)
+
+    return {
+        "paths": results,
+        "performance_metrics": {
+            "estimated_memory_bytes": profile.get("memory", 0),
+            "execution_time_ms": summary.result_available_after + summary.result_consumed_after,
+        },
+        "statistics": {
+            "path_lengths": {
+                "min": min_dist,
+                "max": max_dist,
+                "average": round(sum_dist / total, 2) if total else 0,
+                "distribution": dict(sorted(distribution.items()))
+            }
+        }
+    }
+
+
+gds_query = """
+PROFILE
+CALL gds.allShortestPaths.stream('sl_users_graph', {
+    relationshipWeightProperty: null // Unweighted
+}) YIELD sourceNodeId, targetNodeId, distance 
+WHERE gds.util.asNode(sourceNodeId).id < gds.util.asNode(targetNodeId).id
+RETURN 
+    gds.util.asNode(sourceNodeId).id AS source,
+    gds.util.asNode(targetNodeId).id AS target,
+    distance
+ORDER BY distance DESC
+LIMIT 2500;
+"""
+
+# Second query using Cypher PROFILE
+cypher_query = """
+PROFILE
+MATCH (u1:SLUser), (u2:SLUser)
+WHERE id(u1) < id(u2)
+CALL {
+    WITH u1, u2
+    MATCH p = shortestPath((u1)-[:FOLLOWS*]->(u2)) // Directed, no upper bound
+    RETURN length(p) AS distance
+}
+RETURN 
+    id(u1) AS source,
+    id(u2) AS target,
+    distance
+ORDER BY distance DESC
+LIMIT 2500;
+"""
+
+# Execute both queries through the API
+def compare_approaches():
+   
+    cypher_response = get_path_analysis(cypher_query)
+    gds_response = get_path_analysis(gds_query)
+
+    
+    return {
+        "cypher_results": cypher_response,
+        "gds_results": gds_response,
+        
+    }
