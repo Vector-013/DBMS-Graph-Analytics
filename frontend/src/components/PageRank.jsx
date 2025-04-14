@@ -82,7 +82,7 @@ const TopUsersCarousel = () => {
           Next
         </button>
       </div>
-      <div className="metrics">
+      <div className="metrics-page-rank">
         <h3>Metrics</h3>
         <p>
           <strong>Execution time (in ms):</strong>{" "}
