@@ -11,7 +11,7 @@ import TopUsersCarousel from './components/PageRank';
 import MetricsCarousel from './components/CentralityAnalysis';
 import CountryPairwiseHeatmap from './components/HeatMap';
 import TriangleAnalysis from './components/TriangleAnalysis';
-// import other pages here as you make them
+import APSP from './components/APSP';
 
 function App() {
   return (
@@ -28,7 +28,7 @@ function App() {
           <Route path="/centrality-analysis" element={<MetricsCarousel />} />
           <Route path="/country-pairwise-heatmap" element={<CountryPairwiseHeatmap />} />
           <Route path="/triangle-analysis" element={<TriangleAnalysis />} />
-          {/* Add more routes here */}
+          <Route path="/apsp" element={<APSP />} />
         </Routes>
       </Router>
     </div>
