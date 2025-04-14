@@ -35,8 +35,8 @@ const LandingPage = () => {
         {/* Row 2 */}
         <div className="row">
           <div className="card">
-            <h2>Page 4</h2>
-            <button onClick={() => navigate("/page4")}>Visit</button>
+            <h2>Community Detection</h2>
+            <button onClick={() => navigate("/community-detection")}>Visit</button>
           </div>
 
           <div className="card">
