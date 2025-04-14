@@ -1,5 +1,5 @@
 from app.db.neo4j_connection import get_db
-from typing import List, Dict, Any
+from typing import Optional, List, Dict, Any
 import os
 import requests
 
@@ -264,3 +264,344 @@ def get_community_data() -> Dict[str, Any]:
             return record["result"] if record else {"error": "No data found"}
     except Exception as e:
         raise RuntimeError(f"Database query failed: {str(e)}")
+
+
+def get_pagerank_with_full_metrics() -> Dict[str, Any]:
+    """Fetch top 30 users with scores, profile data, and performance metrics."""
+    # Memory estimation query
+    estimate_query = """
+    CALL gds.pageRank.stream.estimate('lastfm', {})
+    YIELD bytesMin, bytesMax, requiredMemory
+    """
+    
+    # Main results query with PROFILE
+    main_query = """
+    PROFILE
+    CALL gds.pageRank.stream('lastfm')
+    YIELD nodeId, score
+    WITH gds.util.asNode(nodeId) AS user, score
+    RETURN 
+        user.id AS userID,
+        score,
+        user.country_code AS country_code,
+        user.country_name AS country_name,
+        user.top_artists AS top_artist_ids
+    ORDER BY score DESC
+    LIMIT 30
+    """
+    
+    with driver.session() as session:
+        # Get memory estimates
+        mem_result = session.run(estimate_query)
+        mem_data = mem_result.single() if mem_result else {}
+        
+        # Get main results with profiling
+        main_result = session.run(main_query)
+        users = []
+        
+        # Process user records
+        for record in main_result:
+            top_artists = []
+            if record["top_artist_ids"]:
+                artist_names = get_artist_name(record["top_artist_ids"][:10])
+                top_artists = [
+                    {"id": aid, "name": name} 
+                    for aid, name in zip(record["top_artist_ids"], artist_names)
+                ]
+            
+            users.append({
+                "userID": record["userID"],
+                "score": record["score"],
+                "country_code": record["country_code"],
+                "country_name": record["country_name"],
+                "top_artists": top_artists
+            })
+        
+        # Get performance metrics from PROFILE
+        summary = main_result.consume()
+        profile = summary.profile if summary else None
+        
+        metrics = {
+            "execution_time_ms": (
+                summary.result_available_after + 
+                summary.result_consumed_after
+            ) if summary else 0,
+            "memory_estimate": {
+                "min_bytes": mem_data.get("bytesMin", 0),
+                "max_bytes": mem_data.get("bytesMax", 0),
+                "human_readable": {
+                    "min": f"{mem_data.get('bytesMin', 0) / (1024**2):.2f} MB",
+                    "max": f"{mem_data.get('bytesMax', 0) / (1024**2):.2f} MB"
+                }
+            } if mem_data else {},
+            "database_hits": profile.get("dbHits", 0) if profile else 0
+        }
+        
+        return {"users": users, "metrics": metrics}
+
+def get_centrality_analysis() -> Dict[str, Any]:
+    """Execute centrality analysis query and return formatted results"""
+    query = """
+    CALL {
+      // 1. Degree Centrality (with estimate)
+      CALL gds.degree.write.estimate('lastfm', { 
+        writeProperty: 'degree',
+        orientation: 'REVERSE'
+      }) YIELD requiredMemory AS degreeMemory
+      
+      CALL gds.degree.write('lastfm', {
+        writeProperty: 'degree',
+        orientation: 'REVERSE',
+        concurrency: 4,
+        writeConcurrency: 4
+      })
+      YIELD computeMillis, centralityDistribution,
+           nodePropertiesWritten, preProcessingMillis
+      
+      WITH degreeMemory,
+           computeMillis AS degreeTime,
+           centralityDistribution.min AS degreeMin,
+           centralityDistribution.max AS degreeMax,
+           centralityDistribution.mean AS degreeMean,
+           centralityDistribution.p50 AS degreeP50,
+           centralityDistribution.p75 AS degreeP75,
+           centralityDistribution.p90 AS degreeP90
+      
+      CALL {
+        MATCH (u:User)
+        WITH u.degree AS score, u.id AS id, 
+             u.country_code AS countryCode, 
+             u.country_name AS countryName,
+             u.top_artists AS topArtists
+        ORDER BY score DESC
+        LIMIT 10
+        RETURN collect({
+          id: id, 
+          score: score,
+          countryCode: countryCode,
+          countryName: countryName,
+          topArtists: topArtists
+        }) AS topNodes
+      }
+      
+      RETURN degreeMemory, degreeTime, degreeMin, degreeMax, degreeMean,
+             degreeP50, degreeP75, degreeP90, topNodes AS degreeTop
+    }
+    CALL {
+      // 2. Betweenness Centrality (with estimate)
+      CALL gds.betweenness.write.estimate('lastfm', {
+        writeProperty: 'betweenness',
+        samplingSize: 1000
+      }) YIELD requiredMemory AS betweennessMemory
+      
+      CALL gds.betweenness.write('lastfm', {
+        writeProperty: 'betweenness',
+        samplingSize: 1000,
+        concurrency: 4,
+        writeConcurrency: 4
+      })
+      YIELD computeMillis, centralityDistribution,
+           nodePropertiesWritten, preProcessingMillis
+      
+      WITH betweennessMemory,
+           computeMillis AS betweennessTime,
+           centralityDistribution.min AS betweennessMin,
+           centralityDistribution.max AS betweennessMax,
+           centralityDistribution.mean AS betweennessMean,
+           centralityDistribution.p50 AS betweennessP50,
+           centralityDistribution.p75 AS betweennessP75,
+           centralityDistribution.p90 AS betweennessP90
+      
+      CALL {
+        MATCH (u:User)
+        WITH u.betweenness AS score, u.id AS id,
+             u.country_code AS countryCode,
+             u.country_name AS countryName,
+             u.top_artists AS topArtists
+        ORDER BY score DESC
+        LIMIT 10
+        RETURN collect({
+          id: id, 
+          score: score,
+          countryCode: countryCode,
+          countryName: countryName,
+          topArtists: topArtists
+        }) AS topNodes
+      }
+      
+      RETURN betweennessMemory, betweennessTime, betweennessMin, betweennessMax,
+             betweennessMean, betweennessP50, betweennessP75, betweennessP90, 
+             topNodes AS betweennessTop
+    }
+    CALL {
+      // 3. Closeness Centrality (manual memory calculation)
+      CALL gds.graph.list('lastfm') 
+      YIELD nodeCount, relationshipCount
+      WITH 
+        (24 * nodeCount) + (8 * relationshipCount) AS closenessMemory
+      
+      CALL gds.closeness.write('lastfm', {
+        writeProperty: 'closeness',
+        useWassermanFaust: true,
+        concurrency: 4,
+        writeConcurrency: 4
+      })
+      YIELD computeMillis, centralityDistribution,
+           nodePropertiesWritten, preProcessingMillis
+      
+      WITH closenessMemory,
+           computeMillis AS closenessTime,
+           centralityDistribution.min AS closenessMin,
+           centralityDistribution.max AS closenessMax,
+           centralityDistribution.mean AS closenessMean,
+           centralityDistribution.p50 AS closenessP50,
+           centralityDistribution.p75 AS closenessP75,
+           centralityDistribution.p90 AS closenessP90
+      
+      CALL {
+        MATCH (u:User)
+        WITH u.closeness AS score, u.id AS id,
+             u.country_code AS countryCode,
+             u.country_name AS countryName,
+             u.top_artists AS topArtists
+        ORDER BY score DESC
+        LIMIT 10
+        RETURN collect({
+          id: id, 
+          score: score,
+          countryCode: countryCode,
+          countryName: countryName,
+          topArtists: topArtists
+        }) AS topNodes
+      }
+      
+      RETURN closenessMemory, closenessTime, closenessMin, closenessMax, closenessMean,
+             closenessP50, closenessP75, closenessP90, 
+             topNodes AS closenessTop
+    }
+    RETURN {
+      degree: {
+        memory: degreeMemory,
+        timeMs: degreeTime,
+        distribution: {
+          min: degreeMin,
+          max: degreeMax,
+          mean: degreeMean,
+          p50: degreeP50,
+          p75: degreeP75,
+          p90: degreeP90
+        },
+        topNodes: degreeTop
+      },
+      betweenness: {
+        memory: betweennessMemory,
+        timeMs: betweennessTime,
+        distribution: {
+          min: betweennessMin,
+          max: betweennessMax,
+          mean: betweennessMean,
+          p50: betweennessP50,
+          p75: betweennessP75,
+          p90: betweennessP90
+        },
+        topNodes: betweennessTop
+      },
+      closeness: {
+        memory: closenessMemory,
+        timeMs: closenessTime,
+        distribution: {
+          min: closenessMin,
+          max: closenessMax,
+          mean: closenessMean,
+          p50: closenessP50,
+          p75: closenessP75,
+          p90: closenessP90
+        },
+        topNodes: closenessTop
+      }
+    } AS result;
+    """
+
+    try:
+        with driver.session() as session:
+            result = session.run(query)
+            record = result.single()
+            return record["result"] if record else {"error": "No data found"}
+    except Exception as e:
+        raise RuntimeError(f"Database query failed: {str(e)}")
+
+
+QUERIES = {
+    "pairwise_analysis": """
+    PROFILE
+    MATCH (a)-[:FOLLOWS]-(b)-[:FOLLOWS]-(c)-[:FOLLOWS]-(a)
+    WHERE id(a) < id(b) < id(c)
+    WITH [a.country_code, b.country_code, c.country_code] AS countries
+    UNWIND apoc.coll.combinations(countries, 2) AS pair
+    WITH apoc.coll.sort(pair) AS sortedPair
+    WHERE sortedPair[0] IS NOT NULL AND sortedPair[1] IS NOT NULL
+    RETURN sortedPair[0] AS countryA, sortedPair[1] AS countryB, count(*) AS frequency
+    ORDER BY frequency DESC
+    """,
+    
+    "grouped_analysis": """
+    PROFILE
+    MATCH (a)-[:FOLLOWS]-(b)-[:FOLLOWS]-(c)-[:FOLLOWS]-(a)
+    WHERE id(a) < id(b) < id(c)
+    WITH [a.country_code, b.country_code, c.country_code] AS rawCountries
+    WITH rawCountries,
+      CASE
+        WHEN size(apoc.coll.toSet(rawCountries)) = 1 THEN 'All Same Country'
+        WHEN size(apoc.coll.toSet(rawCountries)) = 2 THEN 'Two Same Countries'
+        ELSE 'All Different Countries'
+      END AS countryGroup
+    RETURN 
+      countryGroup,
+      apoc.coll.sort(rawCountries) AS countriesInvolved, 
+      count(*) AS triangleCount
+    ORDER BY triangleCount DESC
+    """
+}
+
+def get_memory_estimate(session) -> Dict[str, Any]:
+    """Get memory estimate for graph projection"""
+    result = session.run("""
+        CALL gds.graph.project.estimate('lastfm', {FOLLOWS: {orientation: 'NATURAL'}})
+        YIELD requiredMemory, bytesMin, bytesMax
+        RETURN requiredMemory, bytesMin, bytesMax
+    """)
+    record = result.single()
+    return {
+        "human_readable": record["requiredMemory"],
+        "bytes_min": record["bytesMin"],
+        "bytes_max": record["bytesMax"]
+    }
+
+def execute_query_with_metrics(query: str) -> Dict[str, Any]:
+    """Execute query and return results with metrics"""
+    with driver.session() as session:
+        # Run main query
+        result = session.run(f"PROFILE {query}")
+        data = [dict(record) for record in result]
+        summary = result.consume()
+        
+        # Get memory estimation
+        memory_estimate = get_memory_estimate(session)
+        
+        return {
+            "data": data,
+            "metrics": {
+                "execution_time_ms": summary.result_available_after + summary.result_consumed_after,
+                "memory_estimate": memory_estimate
+            }
+        }
+
+def get_combined_analysis() -> Dict[str, Any]:
+    """Execute both queries and return combined results"""
+    return {
+        analysis_type: execute_query_with_metrics(query)
+        for analysis_type, query in QUERIES.items()
+    }
+
+
+
