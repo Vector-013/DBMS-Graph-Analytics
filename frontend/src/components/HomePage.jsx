@@ -62,16 +62,9 @@ const LandingPage = () => {
           </div>
 
           <div className="card">
-            <h2>Page 8</h2>
-            <button onClick={() => navigate("/page8")}>Visit</button>
-          </div>
-
-          <div className="card">
-            <h2>Page 9</h2>
-            <button onClick={() => navigate("/page9")}>Visit</button>
-          </div>
-
-          
+            <h2>All Pairs Shortest Paths</h2>
+            <button onClick={() => navigate("/apsp")}>Visit</button>
+          </div>          
         </div>
       </div>
     </div>
