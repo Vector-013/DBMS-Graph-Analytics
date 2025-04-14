@@ -50,7 +50,7 @@ const Graph = ({ paths, selectedPathIndex, pathData }) => {
   const selectedPath = paths[selectedPathIndex] || [];
 
 const colors = [
-    "#FF5733", "#33FF57", "#3357FF", "#FF33A1", "#A133FF", "#33FFF5", "#F5FF33", "#FF8C33", "#33FF8C", "#8C33FF",
+    "#3357FF", "#FF33A1", "#A133FF", "#33FFF5", "#F5FF33", "#FF8C33", "#33FF8C", "#8C33FF",
     "#FF3333", "#33FF33", "#3333FF", "#FF33FF", "#33FFFF", "#FFFF33", "#FF6633", "#33FF66", "#6633FF", "#FF3366",
     "#66FF33", "#3366FF", "#FF9933", "#33FF99", "#9933FF", "#FF3399", "#99FF33", "#3399FF", "#FFCC33", "#33FFCC",
     "#CC33FF", "#FF33CC", "#CCFF33", "#33CCFF", "#FF3333", "#33FF33", "#3333FF", "#FF33FF", "#33FFFF", "#FFFF33",
