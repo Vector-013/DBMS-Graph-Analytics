@@ -1,4 +1,4 @@
-/* ResultsDisplay.css */
+/* APSP.css */
 .results-container {
     display: flex;
     justify-content: space-between;
@@ -8,40 +8,101 @@
   
   .result-section {
     width: 45%;
+    padding: 15px;
+    border: 2px solid #e0e0e0;
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    background-color: #ffffff; /* Clean white background */
+  }
+  
+  .result-section h2 {
+    margin-bottom: 20px;
+    font-size: 1.8rem;
+    color: #2c3e50;
+    border-bottom: 2px solid #4caf50; /* Green underline for visual separation */
+    padding-bottom: 5px;
+  }
+  
+  /* Paths Grid */
+  .paths-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 15px;
+    margin-bottom: 20px;
+  }
+  
+  .grid-card {
+    background-color: #f8fcfb; /* Soft gray-green background */
+    border: 1px solid #c2e2d0; /* Subtle green border */
+    border-radius: 8px;
     padding: 10px;
-    border: 1px solid #ccc;
-    border-radius: 5px;
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+    text-align: center;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
   }
   
-  .carousel {
-    display: flex;
-    overflow-x: auto;
-    gap: 10px;
-    margin-top: 10px;
+  .grid-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15); /* Slight hover effect */
   }
   
-  .carousel-card {
-    min-width: 200px;
-    padding: 10px;
-    border: 1px solid #ccc;
-    border-radius: 5px;
-    background-color: #f9f9f9;
-    text-align: left;
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  .grid-card p {
+    margin: 5px 0;
+    font-size: 0.9rem;
+    color: #34495e; /* Dark gray for better readability */
   }
   
+  /* Performance Metrics */
   .performance-metrics {
-    margin-top: 20px;
+    border: 1px solid #4CAF50;
+    border-radius: 12px;
+    padding: 20px;
+    background: linear-gradient(135deg, #4caf50 0%, #81c784 100%); /* Gradient green background */
+    color: white;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    margin-top: 20px; /* Creates gap between performance and pagination */
   }
   
   .performance-metrics p {
-    margin: 5px 0;
-    font-size: 14px;
+    margin: 8px 0;
+    font-size: 1rem;
+    font-weight: bold; /* Emphasize text */
+    color: white;
   }
   
-  h2 {
-    font-size: 18px;
-    color: #444;
+  /* Pagination Controls */
+  .pagination {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 15px; /* Reduced spacing between pagination controls */
+    margin-top: 10px;
+  }
+  
+  .pagination button {
+    background-color: #4CAF50;
+    border: none;
+    color: white;
+    padding: 0.3rem 0.7rem; /* Smaller button size */
+    font-size: 0.9rem; /* Reduced font size for smaller buttons */
+    border-radius: 6px;
+    cursor: pointer;
+    transition: background-color 0.3s ease, transform 0.2s ease;
+  }
+  
+  .pagination button:hover {
+    background-color: #388E3C;
+    transform: translateY(-3px); /* Slight hover effect */
+  }
+  
+  .pagination button:disabled {
+    background-color: #ccc;
+    cursor: not-allowed;
+  }
+  
+  .pagination span {
+    font-size: 1rem;
+    font-weight: bold;
+    color: #2c3e50; /* Dark gray for readability */
   }
   
