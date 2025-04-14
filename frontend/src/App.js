@@ -8,6 +8,7 @@ import CommonNeighbors from './components/CommonNeighbors';
 import AllShortestPathsApp from './components/AllShortestPaths';
 import Graphs from './components/CommunityDetection';
 import TopUsersCarousel from './components/PageRank';
+import MetricsCarousel from './components/CentralityAnalysis';
 // import other pages here as you make them
 
 function App() {
@@ -22,6 +23,7 @@ function App() {
           <Route path="/all-shortest-paths" element={<AllShortestPathsApp />} />
           <Route path="/community-detection" element={<Graphs />} />
           <Route path="/page-rank" element={<TopUsersCarousel />} />
+          <Route path="/centrality-analysis" element={<MetricsCarousel />} />
           {/* Add more routes here */}
         </Routes>
       </Router>
